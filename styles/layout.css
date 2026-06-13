@@ -21,10 +21,12 @@ select, button {
   display: grid; gap: 12px; padding: 16px;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-areas:
-    "code   callstack eventloop"
-    "code   queues    eventloop"
+    "info    info      info"
+    "code    callstack eventloop"
+    "code    queues    eventloop"
     "request threadpool explain";
 }
+#scenario-info-panel { grid-area: info; }
 #code-panel { grid-area: code; }
 #callstack-panel { grid-area: callstack; }
 #eventloop-panel { grid-area: eventloop; }
@@ -59,6 +61,10 @@ select, button {
 .token[data-type="nexttick"] { background: var(--c-nexttick); }
 .token[data-type="completed"] { background: var(--c-completed); }
 .token[data-type="waiting"] { background: var(--c-waiting); }
+.token[data-type="cache"] { background: var(--c-cache); }
+.token[data-type="crypto"] { background: var(--c-crypto); }
+.token[data-type="compress"] { background: var(--c-compress); }
+.token[data-type="cpu"] { background: var(--c-cpu); }
 /* event loop phases */
 .phase { padding: 8px; margin: 4px 0; border-radius: 6px;
   border: 1px solid var(--panel-border); font-size: 13px; }
@@ -83,6 +89,16 @@ select, button {
   .app-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "code" "callstack" "eventloop" "queues" "threadpool" "request" "explain";
+      "info" "code" "callstack" "eventloop" "queues" "threadpool" "request" "explain";
   }
 }
+
+/* scenario info panel */
+.scenario-route { font-family: ui-monospace, monospace; font-size: 14px;
+  font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+.scenario-desc { font-size: 13px; line-height: 1.5; margin: 0 0 10px; }
+.scenario-watch { font-size: 12px; color: var(--text-dim); margin: 8px 0 0;
+  border-left: 2px solid var(--accent); padding-left: 8px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 10px;
+  background: var(--panel-border); color: var(--text); }

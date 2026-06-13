@@ -19,6 +19,10 @@
   --c-nexttick: #ff7b72;
   --c-completed: #2ea043;
   --c-waiting: #8b949e;
+  --c-cache: #f778ba;
+  --c-crypto: #a371f7;
+  --c-compress: #ffa657;
+  --c-cpu: #f85149;
 }
 
 :root[data-theme="light"] {
@@ -40,4 +44,8 @@
   --c-nexttick: #cf222e;
   --c-completed: #1a7f37;
   --c-waiting: #656d76;
+  --c-cache: #bf3989;
+  --c-crypto: #8250df;
+  --c-compress: #bc4c00;
+  --c-cpu: #cf222e;
 }
