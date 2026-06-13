@@ -162,3 +162,46 @@ test("route-payment: external API then DB write run sequentially (network before
   assert.ok(firstNetwork >= 0 && firstDb >= 0);
   assert.ok(firstNetwork < firstDb, "the card charge (network) starts before the DB write");
 });
+
+test("route-search: queries indexes one at a time (sequential, single slot)", () => {
+  const s = scenarios.find((x) => x.id === "route-search");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  // never more than one db slot busy at once (sequential await-in-loop)
+  const maxBusy = Math.max(...frames.map((f) => f.threadPool.filter((slot) => slot !== null).length));
+  assert.equal(maxBusy, 1, "search runs queries sequentially, not in parallel");
+  // but it does run several db queries in total
+  const dbFrames = frames.filter((f) => f.io.some((t) => t.type === "db"));
+  assert.ok(dbFrames.length >= 2);
+});
+
+test("route-documents: CPU-bound processing blocks the event loop", () => {
+  const s = scenarios.find((x) => x.id === "route-documents");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  assert.ok(frames.some((f) => f.blocking && f.callStack.some((t) => t.type === "cpu")));
+});
+
+test("all 12 route ids are registered", () => {
+  const routeIds = scenarios.filter((s) => s.category === "route").map((s) => s.id).sort();
+  assert.deepEqual(routeIds, [
+    "http-users-db",
+    "route-analytics",
+    "route-dashboard",
+    "route-documents",
+    "route-export",
+    "route-login",
+    "route-orders",
+    "route-payment",
+    "route-products",
+    "route-reports",
+    "route-search",
+    "route-upload",
+  ]);
+});
+
+test("catalog has 4 concepts and 12 routes (16 total)", () => {
+  assert.equal(scenarios.filter((s) => s.category === "concept").length, 4);
+  assert.equal(scenarios.filter((s) => s.category === "route").length, 12);
+  assert.equal(scenarios.length, 16);
+});

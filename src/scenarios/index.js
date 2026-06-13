@@ -13,6 +13,8 @@ import routeExport from "./route-export.js";
 import routeAnalytics from "./route-analytics.js";
 import routeProducts from "./route-products.js";
 import routePayment from "./route-payment.js";
+import routeSearch from "./route-search.js";
+import routeDocuments from "./route-documents.js";
 
 export const scenarios = [
   nextTickVsPromise,
@@ -29,4 +31,6 @@ export const scenarios = [
   routeAnalytics,
   routeProducts,
   routePayment,
+  routeSearch,
+  routeDocuments,
 ];
