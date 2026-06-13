@@ -21,13 +21,19 @@ python3 -m http.server 8000
 node --test
 ```
 
-## Scenarios (Phase 1)
+## Scenarios
 
-- process.nextTick() vs Promise
-- Promise (microtask) vs setTimeout (macrotask)
-- setTimeout(0) vs setImmediate()
-- fs.readFileSync (blocking) vs fs.readFile (non-blocking)
-- HTTP GET /api/users + DB query
+**Concepts:** nextTick vs Promise · Promise vs setTimeout · setTimeout vs setImmediate ·
+sync vs async fs.
+
+**API Routes:** GET /api/users (fast DB) · GET /api/orders (slow DB) · GET /api/dashboard
+(parallel queries) · POST /api/login (DB + bcrypt) · POST /api/upload (streamed write) ·
+GET /api/reports (CPU blocking) · GET /api/export (CSV stream) · GET /api/analytics
+(external API) · GET /api/products (cache + DB fallback) · POST /api/payment (sequential
+awaits) · GET /api/search (await-in-loop) · POST /api/documents/process (CPU bound).
+
+Pick a scenario from the grouped dropdown; the scenario-info panel explains its workload
+and what to watch for.
 
 ## Controls
 
@@ -41,11 +47,13 @@ so stepping backward and scrubbing are free and deterministic. Tokens animate be
 panels via FLIP.
 
 Adding a scenario = drop a file in `src/scenarios/` exporting
-`{ id, title, route, description, code, run(api) }` and register it in `index.js`. The
-authoring API (`call`, `return`, `nextTick`, `promiseThen`, `queueMicrotask`, `setTimeout`,
-`setImmediate`, `startIO`, `httpRequest`, `runLoop`, `drainMicrotasks`, `mark`) is the
-stable contract — no engine or renderer changes needed.
+`{ id, title, route, description, code, run(api), category, tags, watchFor }` and register
+it in `index.js`. The authoring API (`call`, `return`, `nextTick`, `promiseThen`,
+`queueMicrotask`, `setTimeout`, `setImmediate`, `startIO`, `cpuWork`, `httpRequest`,
+`setRequestStage`, `runLoop`, `drainMicrotasks`, `mark`) is the stable contract — no engine
+or renderer changes needed.
 
 See `docs/superpowers/specs/` and `docs/superpowers/plans/` for the design and plan docs.
-This is Phase 1 (core engine + MVP); Phase 2 expands the scenario library and Phase 3 adds
-concurrent requests, a live timeline, comparison mode, and Worker Threads.
+Phase 1 built the core engine + MVP; Phase 2 added the full route catalog (CPU-blocking,
+crypto, caching, streaming, parallel vs sequential I/O). Phase 3 (planned) adds concurrent
+requests, a live timeline, comparison mode, and Worker Threads.
