@@ -1,6 +1,9 @@
 // src/scenarios/http-users-db.js
 export default {
   id: "http-users-db",
+  category: "route",
+  tags: ["DB", "non-blocking", "request-lifecycle"],
+  watchFor: "The handler returns immediately; the DB callback runs later in the poll phase.",
   title: "HTTP GET /api/users + DB query",
   route: "/api/users",
   description:

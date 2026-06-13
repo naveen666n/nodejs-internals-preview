@@ -1,6 +1,9 @@
 // src/scenarios/promise-vs-callback.js
 export default {
   id: "promise-vs-callback",
+  category: "concept",
+  tags: ["microtask", "macrotask", "timers"],
+  watchFor: "The promise microtask runs before the setTimeout callback, even at 0ms.",
   title: "Promise (microtask) vs setTimeout (macrotask)",
   route: "concept",
   description:

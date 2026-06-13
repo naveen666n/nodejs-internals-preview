@@ -1,6 +1,9 @@
 // src/scenarios/sync-vs-async-fs.js
 export default {
   id: "sync-vs-async-fs",
+  category: "concept",
+  tags: ["file", "blocking", "non-blocking"],
+  watchFor: "readFileSync freezes the call stack; readFile offloads to the thread pool.",
   title: "fs.readFileSync (blocking) vs fs.readFile (non-blocking)",
   route: "concept",
   description:

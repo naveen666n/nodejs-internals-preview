@@ -92,3 +92,12 @@ test("all five Phase-1 scenarios are registered", () => {
     "timeout-vs-immediate",
   ]);
 });
+
+test("every scenario has a valid category, tags array, and watchFor string", () => {
+  for (const s of scenarios) {
+    assert.ok(["concept", "route"].includes(s.category), `${s.id} category invalid: ${s.category}`);
+    assert.ok(Array.isArray(s.tags) && s.tags.length > 0, `${s.id} must have non-empty tags`);
+    assert.equal(typeof s.watchFor, "string", `${s.id} watchFor must be a string`);
+    assert.ok(s.watchFor.length > 0, `${s.id} watchFor must be non-empty`);
+  }
+});

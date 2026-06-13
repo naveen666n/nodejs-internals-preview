@@ -1,6 +1,9 @@
 // src/scenarios/timeout-vs-immediate.js
 export default {
   id: "timeout-vs-immediate",
+  category: "concept",
+  tags: ["timers", "check", "phases"],
+  watchFor: "Within one loop turn, the timers phase runs before the check phase.",
   title: "setTimeout(0) vs setImmediate()",
   route: "concept",
   description:

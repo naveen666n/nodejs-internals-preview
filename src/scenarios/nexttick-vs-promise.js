@@ -1,6 +1,9 @@
 // src/scenarios/nexttick-vs-promise.js
 export default {
   id: "nexttick-vs-promise",
+  category: "concept",
+  tags: ["microtasks", "nextTick", "promises"],
+  watchFor: "The nextTick queue fully drains before any promise microtask runs.",
   title: "process.nextTick() vs Promise",
   route: "concept",
   description:
