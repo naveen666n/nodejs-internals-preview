@@ -45,3 +45,33 @@ test("mark() records a keyFrame pointing at the next emitted frame index", () =>
   const idx = result.keyFrames[0].index;
   assert.ok(idx >= 0 && idx < result.frames.length);
 });
+
+test("nextTick callbacks run before promise microtasks", () => {
+  const order = [];
+  const fs = frames((api) => {
+    api.call("main", { line: 0 });
+    api.promiseThen(() => order.push("promise"), { label: "promise.then" });
+    api.nextTick(() => order.push("nextTick"), { label: "nextTick cb" });
+    api.return();
+    api.drainMicrotasks(); // explicit drain after top-level script
+  });
+  assert.deepEqual(order, ["nextTick", "promise"]);
+  // and the final frame must have empty microtask queues
+  const last = fs[fs.length - 1];
+  assert.deepEqual(last.microtasks.nextTick, []);
+  assert.deepEqual(last.microtasks.promises, []);
+});
+
+test("a nextTick scheduled inside a microtask drains before remaining promises", () => {
+  const order = [];
+  frames((api) => {
+    api.promiseThen(() => {
+      order.push("p1");
+      api.nextTick(() => order.push("nt-from-p1"), { label: "nt" });
+    }, { label: "p1" });
+    api.promiseThen(() => order.push("p2"), { label: "p2" });
+    api.drainMicrotasks();
+  });
+  // After p1 runs and schedules a nextTick, that nextTick must run before p2
+  assert.deepEqual(order, ["p1", "nt-from-p1", "p2"]);
+});
