@@ -10,6 +10,7 @@ import { renderQueues } from "./ui/queues.js";
 import { renderThreadPool } from "./ui/threadPool.js";
 import { renderRequestLane } from "./ui/requestLane.js";
 import { renderControls, updateControls } from "./ui/controls.js";
+import { renderScenarioInfo } from "./ui/scenarioInfo.js";
 
 const els = {
   picker: document.getElementById("scenario-picker"),
@@ -21,6 +22,7 @@ const els = {
   threadpool: document.getElementById("threadpool-panel"),
   request: document.getElementById("request-panel"),
   explain: document.getElementById("explain-panel"),
+  scenarioInfo: document.getElementById("scenario-info-panel"),
   controls: document.getElementById("controls"),
 };
 
@@ -28,13 +30,24 @@ initTheme(els.themeToggle);
 
 let state = { scenario: null, frames: [], keyFrames: [], index: 0, playing: false, speed: 1, timer: null };
 
-// Populate scenario picker
+// Populate scenario picker, grouped by category
+const GROUP_LABELS = { concept: "Concepts", route: "API Routes" };
+const groupEls = {};
+Object.entries(GROUP_LABELS).forEach(([key, label]) => {
+  const og = document.createElement("optgroup");
+  og.label = label;
+  groupEls[key] = og;
+  els.picker.appendChild(og);
+});
+const otherGroup = document.createElement("optgroup");
+otherGroup.label = "Other";
 scenarios.forEach((s) => {
   const o = document.createElement("option");
   o.value = s.id;
   o.textContent = `${s.title}`;
-  els.picker.appendChild(o);
+  (groupEls[s.category] || otherGroup).appendChild(o);
 });
+if (otherGroup.children.length) els.picker.appendChild(otherGroup);
 els.picker.addEventListener("change", () => loadScenario(els.picker.value));
 
 // --- FLIP animation: record token positions before re-render, animate after ---
@@ -121,6 +134,7 @@ function loadScenario(id) {
     return;
   }
   state.scenario = scenario;
+  renderScenarioInfo(els.scenarioInfo, scenario);
   state.frames = result.frames;
   state.keyFrames = result.keyFrames;
   state.index = 0;
