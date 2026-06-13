@@ -125,3 +125,27 @@ test("route-login: bcrypt runs as a crypto I/O on the thread pool", () => {
   const { frames } = simulate(s);
   assert.ok(frames.some((f) => f.io.some((t) => t.type === "crypto")));
 });
+
+test("route-upload: streams the file as multiple file I/O chunks", () => {
+  const s = scenarios.find((x) => x.id === "route-upload");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  const fileFrames = frames.filter((f) => f.io.some((t) => t.type === "file"));
+  assert.ok(fileFrames.length >= 2, "upload should stream multiple file chunks");
+});
+
+test("route-reports: CPU-bound report generation blocks the event loop", () => {
+  const s = scenarios.find((x) => x.id === "route-reports");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  assert.ok(frames.some((f) => f.blocking && f.callStack.some((t) => t.type === "cpu")));
+});
+
+test("route-export: produces both a db query and streamed file output", () => {
+  const s = scenarios.find((x) => x.id === "route-export");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  assert.ok(frames.some((f) => f.io.some((t) => t.type === "db")), "export should query the DB");
+  const fileFrames = frames.filter((f) => f.io.some((t) => t.type === "file"));
+  assert.ok(fileFrames.length >= 2, "export should stream CSV output");
+});
