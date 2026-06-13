@@ -28,6 +28,9 @@ export default {
         const chunks = 3;
         function writeCsv(i) {
           if (i >= chunks) {
+            api.setRequestStage(req, "responding", { line: 2 });
+            api.call("res.end", { line: 2, type: "completed", explanation: "CSV fully streamed — end the response" });
+            api.return({ line: 2 });
             api.setRequestStage(req, "completed", { line: 2 });
             return;
           }

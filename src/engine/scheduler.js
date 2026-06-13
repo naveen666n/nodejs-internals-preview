@@ -198,8 +198,10 @@ export function simulate(scenario) {
         if (phase === "poll") completeReadyIO(); // I/O completions surface in poll
         runPhase(phase);
       }
-      // if only I/O remains in flight, advance it on the next turn
-      if (!macroPending() && ioPending()) completeReadyIO();
+      // Note: completeReadyIO() runs once per turn (in the poll phase above), so each
+      // loop turn advances in-flight I/O by exactly one `turn` — `turns:N` maps 1:1 to N
+      // visible loop cycles. (A second call here would double-count and make `turns`
+      // render as half as many cycles.)
       // If this turn produced no frames but I/O is still pending, show the loop cycling in
       // the poll phase, waiting for I/O — otherwise slow I/O would be invisible.
       if (frames.length === before && ioPending()) {
