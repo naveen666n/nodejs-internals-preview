@@ -101,3 +101,27 @@ test("every scenario has a valid category, tags array, and watchFor string", () 
     assert.ok(s.watchFor.length > 0, `${s.id} watchFor must be non-empty`);
   }
 });
+
+test("route-orders: slow DB query keeps the loop spinning over multiple turns", () => {
+  const s = scenarios.find((x) => x.id === "route-orders");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  // db I/O is in flight across several frames (slow query)
+  const inflight = frames.filter((f) => f.io.some((t) => t.type === "db"));
+  assert.ok(inflight.length >= 3, "slow query should be in flight for several frames");
+});
+
+test("route-dashboard: parallel queries occupy 2+ thread-pool slots at once", () => {
+  const s = scenarios.find((x) => x.id === "route-dashboard");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  const parallel = frames.some((f) => f.threadPool.filter((slot) => slot !== null).length >= 2);
+  assert.ok(parallel, "dashboard should run queries in parallel");
+});
+
+test("route-login: bcrypt runs as a crypto I/O on the thread pool", () => {
+  const s = scenarios.find((x) => x.id === "route-login");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  assert.ok(frames.some((f) => f.io.some((t) => t.type === "crypto")));
+});
