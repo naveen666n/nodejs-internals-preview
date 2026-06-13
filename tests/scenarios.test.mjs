@@ -138,3 +138,27 @@ test("route-export: produces both a db query and streamed file output", () => {
   const fileFrames = frames.filter((f) => f.io.some((t) => t.type === "file"));
   assert.ok(fileFrames.length >= 2, "export should stream CSV output");
 });
+
+test("route-analytics: makes an external network call", () => {
+  const s = scenarios.find((x) => x.id === "route-analytics");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  assert.ok(frames.some((f) => f.io.some((t) => t.type === "network")));
+});
+
+test("route-products: does a cache lookup", () => {
+  const s = scenarios.find((x) => x.id === "route-products");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  assert.ok(frames.some((f) => f.io.some((t) => t.type === "cache")));
+});
+
+test("route-payment: external API then DB write run sequentially (network before db)", () => {
+  const s = scenarios.find((x) => x.id === "route-payment");
+  assert.ok(s);
+  const { frames } = simulate(s);
+  const firstNetwork = frames.findIndex((f) => f.io.some((t) => t.type === "network"));
+  const firstDb = frames.findIndex((f) => f.io.some((t) => t.type === "db"));
+  assert.ok(firstNetwork >= 0 && firstDb >= 0);
+  assert.ok(firstNetwork < firstDb, "the card charge (network) starts before the DB write");
+});
