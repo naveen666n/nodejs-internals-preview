@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Node.js Internals Simulator</title>
+  <link rel="stylesheet" href="styles/theme.css" />
+  <link rel="stylesheet" href="styles/layout.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Node.js Internals Simulator</h1>
+    <div class="topbar-controls">
+      <select id="scenario-picker" aria-label="Choose scenario"></select>
+      <button id="theme-toggle" aria-label="Toggle theme">🌓 Theme</button>
+    </div>
+  </header>
+
+  <main id="app" class="app-grid">
+    <section id="code-panel" class="panel"></section>
+    <section id="callstack-panel" class="panel"></section>
+    <section id="eventloop-panel" class="panel"></section>
+    <section id="queues-panel" class="panel"></section>
+    <section id="threadpool-panel" class="panel"></section>
+    <section id="request-panel" class="panel"></section>
+    <section id="explain-panel" class="panel"></section>
+  </main>
+
+  <footer id="controls" class="controls"></footer>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

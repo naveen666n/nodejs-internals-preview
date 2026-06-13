@@ -1,0 +1,88 @@
+/* styles/layout.css */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+.topbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 20px; border-bottom: 1px solid var(--panel-border);
+}
+.topbar h1 { font-size: 18px; margin: 0; }
+.topbar-controls { display: flex; gap: 10px; }
+select, button {
+  background: var(--panel-bg); color: var(--text);
+  border: 1px solid var(--panel-border); border-radius: 6px;
+  padding: 6px 10px; cursor: pointer; font-size: 13px;
+}
+.app-grid {
+  display: grid; gap: 12px; padding: 16px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-areas:
+    "code   callstack eventloop"
+    "code   queues    eventloop"
+    "request threadpool explain";
+}
+#code-panel { grid-area: code; }
+#callstack-panel { grid-area: callstack; }
+#eventloop-panel { grid-area: eventloop; }
+#queues-panel { grid-area: queues; }
+#threadpool-panel { grid-area: threadpool; }
+#request-panel { grid-area: request; }
+#explain-panel { grid-area: explain; }
+.panel {
+  background: var(--panel-bg); border: 1px solid var(--panel-border);
+  border-radius: 8px; padding: 12px; min-height: 120px; overflow: auto;
+}
+.panel h2 { font-size: 13px; margin: 0 0 10px; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 0.5px; }
+/* code panel */
+.code-line { font-family: ui-monospace, monospace; font-size: 13px;
+  white-space: pre; padding: 1px 6px; border-radius: 3px; }
+.code-line.active { background: var(--active-line); }
+/* token */
+.token {
+  display: inline-block; padding: 3px 8px; margin: 3px; border-radius: 5px;
+  font-size: 12px; font-family: ui-monospace, monospace; color: #fff;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.token[data-type="sync"] { background: var(--c-sync); }
+.token[data-type="async"] { background: var(--c-async); }
+.token[data-type="blocking"] { background: var(--c-blocking); }
+.token[data-type="db"] { background: var(--c-db); }
+.token[data-type="file"] { background: var(--c-file); }
+.token[data-type="network"] { background: var(--c-network); }
+.token[data-type="timer"] { background: var(--c-timer); }
+.token[data-type="promise"] { background: var(--c-promise); }
+.token[data-type="nexttick"] { background: var(--c-nexttick); }
+.token[data-type="completed"] { background: var(--c-completed); }
+.token[data-type="waiting"] { background: var(--c-waiting); }
+/* event loop phases */
+.phase { padding: 8px; margin: 4px 0; border-radius: 6px;
+  border: 1px solid var(--panel-border); font-size: 13px; }
+.phase.active { border-color: var(--accent); background: var(--active-line);
+  font-weight: 600; }
+/* thread pool slots */
+.slot { display: inline-flex; align-items: center; justify-content: center;
+  width: 90px; height: 36px; margin: 4px; border-radius: 6px;
+  border: 1px dashed var(--panel-border); font-size: 11px; }
+.slot.busy { border-style: solid; }
+/* controls */
+.controls { display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; border-top: 1px solid var(--panel-border); flex-wrap: wrap; }
+.controls input[type="range"] { flex: 1; min-width: 150px; }
+.queue-group { margin-bottom: 10px; }
+.queue-group .queue-label { font-size: 11px; color: var(--text-dim); }
+.badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+.badge.blocking { background: var(--c-blocking); color: #fff; }
+.badge.nonblocking { background: var(--c-async); color: #fff; }
+
+@media (max-width: 900px) {
+  .app-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "code" "callstack" "eventloop" "queues" "threadpool" "request" "explain";
+  }
+}
