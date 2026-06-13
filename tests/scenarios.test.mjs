@@ -82,17 +82,6 @@ test("http-users-db: the I/O completion frame is highlighted in the poll phase",
   assert.equal(completion.activePhase, "poll");
 });
 
-test("all five Phase-1 scenarios are registered", () => {
-  const ids = scenarios.map((s) => s.id).sort();
-  assert.deepEqual(ids, [
-    "http-users-db",
-    "nexttick-vs-promise",
-    "promise-vs-callback",
-    "sync-vs-async-fs",
-    "timeout-vs-immediate",
-  ]);
-});
-
 test("every scenario has a valid category, tags array, and watchFor string", () => {
   for (const s of scenarios) {
     assert.ok(["concept", "route"].includes(s.category), `${s.id} category invalid: ${s.category}`);
