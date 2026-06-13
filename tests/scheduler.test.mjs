@@ -126,3 +126,41 @@ test("httpRequest registers an active request with a route", () => {
   const withReq = fs.find((f) => f.requests.length === 1);
   assert.equal(withReq.requests[0].route, "/api/users");
 });
+
+test("cpuWork holds the stack for the configured steps with a blocking flag, then returns", () => {
+  const fs = frames((api) => {
+    api.call("main", { line: 0 });
+    api.cpuWork({ label: "hashLoop", steps: 3 });
+    api.return();
+  });
+  const blocking = fs.filter((f) => f.blocking && f.callStack.some((t) => t.type === "cpu"));
+  assert.equal(blocking.length, 3, "should emit one blocking frame per step");
+  const last = fs[fs.length - 1];
+  assert.ok(!last.callStack.some((t) => t.type === "cpu"), "cpu token gone after return");
+  assert.deepEqual(last.callStack.map((t) => t.label), [], "stack empty at end");
+});
+
+test("cpuWork defaults to 4 steps when steps is omitted", () => {
+  const fs = frames((api) => { api.cpuWork({ label: "work" }); });
+  const blocking = fs.filter((f) => f.blocking && f.callStack.some((t) => t.type === "cpu"));
+  assert.equal(blocking.length, 4);
+});
+
+test("runLoop emits poll-waiting frames while slow I/O is still in flight", () => {
+  const fs = frames((api) => {
+    api.startIO({ ioType: "db", label: "slow", turns: 6, onComplete: () => {} });
+    api.runLoop();
+  });
+  const waiting = fs.filter((f) => f.activePhase === "poll" && f.explanation.includes("waiting for I/O"));
+  assert.ok(waiting.length >= 1, "should show the loop waiting in poll while I/O runs");
+  assert.ok(waiting.every((f) => f.io.length >= 1), "I/O token still present during waits");
+});
+
+test("fast (1-turn) I/O does NOT produce a poll-waiting frame", () => {
+  const fs = frames((api) => {
+    api.startIO({ ioType: "db", label: "fast", turns: 1, onComplete: () => {} });
+    api.runLoop();
+  });
+  const waiting = fs.filter((f) => f.explanation.includes("waiting for I/O"));
+  assert.equal(waiting.length, 0, "fast I/O completes on the first poll, no waiting frame");
+});

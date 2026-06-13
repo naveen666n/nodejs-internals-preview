@@ -71,6 +71,19 @@ export function simulate(scenario) {
       emit({ activeLine: meta.line, explanation: meta.explanation || "setImmediate() registered (check phase)",
              changed: ["macro"] });
     },
+    cpuWork(meta = {}) {
+      const steps = meta.steps || 4;
+      const token = makeToken("cpu", meta.label || "CPU work");
+      state.callStack.push(token);
+      const base = meta.explanation || `${token.label}: CPU-bound work blocking the event loop`;
+      for (let i = 1; i <= steps; i++) {
+        emit({ activeLine: meta.line, blocking: true,
+               explanation: `${base} (${i}/${steps})`, changed: ["callStack"] });
+      }
+      state.callStack.pop();
+      emit({ activeLine: meta.line, explanation: `${token.label} finished — event loop free again`,
+             changed: ["callStack"] });
+    },
     startIO(meta = {}) {
       const type = meta.ioType || "file";
       const token = makeToken(type, meta.label || `${type} I/O`);
@@ -180,12 +193,21 @@ export function simulate(scenario) {
     let guard = 0;
     while ((macroPending() || ioPending()) && guard < 1000) {
       guard += 1;
+      const before = frames.length;
       for (const phase of PHASES) {
         if (phase === "poll") completeReadyIO(); // I/O completions surface in poll
         runPhase(phase);
       }
       // if only I/O remains in flight, advance it on the next turn
       if (!macroPending() && ioPending()) completeReadyIO();
+      // If this turn produced no frames but I/O is still pending, show the loop cycling in
+      // the poll phase, waiting for I/O — otherwise slow I/O would be invisible.
+      if (frames.length === before && ioPending()) {
+        state.activePhase = "poll";
+        emit({ explanation: "poll phase: waiting for I/O to complete (the event loop is free, not blocked)",
+               changed: [] });
+        state.activePhase = null;
+      }
     }
   }
 
