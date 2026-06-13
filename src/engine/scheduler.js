@@ -54,8 +54,8 @@ export function simulate(scenario) {
     queueMicrotask(cb, meta = {}) {
       return api.promiseThen(cb, { ...meta, label: meta.label || "queueMicrotask cb" });
     },
-    drainMicrotasks(meta = {}) {
-      drainMicrotasks(meta);
+    drainMicrotasks() {
+      drainMicrotasks();
     },
     setTimeout(cb, _delay, meta = {}) {
       const token = makeToken("timer", meta.label || "setTimeout cb");
@@ -98,7 +98,7 @@ export function simulate(scenario) {
              explanation: meta.explanation || `Request ${req ? req.route : ""} → ${stage}`,
              changed: ["requests"] });
     },
-    runLoop(meta = {}) {
+    runLoop() {
       runLoop();
     },
     mark(label) {

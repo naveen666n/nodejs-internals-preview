@@ -14,6 +14,7 @@ export function renderRequestLane(el, frame) {
     const div = document.createElement("div");
     div.className = "token";
     div.dataset.type = "network";
+    div.dataset.id = r.id; // stable id so the request stays FLIP-consistent across frames
     div.textContent = `${r.route} — ${r.stage}`;
     el.appendChild(div);
   });

@@ -30,7 +30,9 @@ export function renderThreadPool(el, frame) {
     const d = document.createElement("div");
     d.className = "token";
     d.dataset.type = t.type;
-    d.dataset.id = t.id;
+    // No data-id here: the same I/O token is already FLIP-tracked on its thread-pool
+    // slot above. This list is a secondary readout, so it stays out of FLIP to avoid
+    // two DOM nodes claiming one token id.
     d.textContent = t.label;
     io.appendChild(d);
   });

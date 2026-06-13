@@ -76,6 +76,22 @@ test("a nextTick scheduled inside a microtask drains before remaining promises",
   assert.deepEqual(order, ["p1", "nt-from-p1", "p2"]);
 });
 
+test("queueMicrotask runs as a promise-queue microtask, after nextTick", () => {
+  const order = [];
+  const fs = frames((api) => {
+    api.queueMicrotask(() => order.push("qmt"), { label: "queueMicrotask cb" });
+    api.nextTick(() => order.push("nextTick"), { label: "nextTick cb" });
+    api.drainMicrotasks();
+  });
+  // nextTick has priority over the promise microtask queue (where queueMicrotask lands)
+  assert.deepEqual(order, ["nextTick", "qmt"]);
+  // the queueMicrotask callback is tracked in the promise microtask queue
+  const queued = fs.find((f) => f.microtasks.promises.some((t) => t.label === "queueMicrotask cb"));
+  assert.ok(queued, "queueMicrotask should enqueue into the promise microtask queue");
+  const last = fs[fs.length - 1];
+  assert.deepEqual(last.microtasks.promises, []);
+});
+
 test("setImmediate (check) runs after setTimeout(0) (timers) within a loop", () => {
   const order = [];
   frames((api) => {
