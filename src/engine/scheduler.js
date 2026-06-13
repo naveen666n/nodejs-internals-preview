@@ -84,9 +84,18 @@ export function simulate(scenario) {
              changed: ["threadPool", "io"] });
     },
     httpRequest(meta = {}) {
-      const req = { id: makeToken("network", meta.label || "request").id, route: meta.route || "/", stage: "received" };
+      const id = makeToken("network", meta.label || "request").id;
+      const req = { id, route: meta.route || "/", stage: meta.stage || "received" };
       state.requests.push(req);
       emit({ activeLine: meta.line, explanation: meta.explanation || `Incoming HTTP request ${meta.route || ""}`,
+             changed: ["requests"] });
+      return id; // scenarios use this handle to advance the request's lifecycle stage
+    },
+    setRequestStage(id, stage, meta = {}) {
+      const req = state.requests.find((r) => r.id === id);
+      if (req) req.stage = stage;
+      emit({ activeLine: meta.line,
+             explanation: meta.explanation || `Request ${req ? req.route : ""} → ${stage}`,
              changed: ["requests"] });
     },
     runLoop(meta = {}) {
@@ -138,7 +147,9 @@ export function simulate(scenario) {
         // remove from in-flight io
         const ioIdx = state.io.findIndex((t) => t.id === done.token.id);
         if (ioIdx >= 0) state.io.splice(ioIdx, 1);
-        // queue its completion callback into poll
+        // queue its completion callback into poll. I/O completions are detected when the
+        // loop reaches the poll phase, so reflect that in the active-phase highlight.
+        state.activePhase = "poll";
         const cbToken = makeToken("completed", `${done.token.label} callback`);
         state.macro.poll.push(cbToken);
         macroCbs.poll.push({ token: cbToken, cb: done.onComplete });

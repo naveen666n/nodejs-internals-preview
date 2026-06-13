@@ -64,6 +64,24 @@ test("http-users-db: registers a request on /api/users and completes a DB I/O", 
   assert.ok(frames.some((f) => f.io.some((t) => t.type === "db")));
 });
 
+test("http-users-db: request lifecycle stage advances beyond 'received'", () => {
+  const s = scenarios.find((x) => x.id === "http-users-db");
+  const { frames } = simulate(s);
+  const stages = new Set();
+  for (const f of frames) for (const r of f.requests) stages.add(r.stage);
+  assert.ok(stages.has("received"));
+  assert.ok(stages.has("completed"), "request should reach the completed stage");
+  assert.ok(stages.size >= 3, "request should pass through multiple lifecycle stages");
+});
+
+test("http-users-db: the I/O completion frame is highlighted in the poll phase", () => {
+  const s = scenarios.find((x) => x.id === "http-users-db");
+  const { frames } = simulate(s);
+  const completion = frames.find((f) => f.explanation.includes("completed in thread pool"));
+  assert.ok(completion, "should have an I/O completion frame");
+  assert.equal(completion.activePhase, "poll");
+});
+
 test("all five Phase-1 scenarios are registered", () => {
   const ids = scenarios.map((s) => s.id).sort();
   assert.deepEqual(ids, [
