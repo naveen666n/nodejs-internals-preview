@@ -52,8 +52,17 @@ existing API changes; no rewrites.
 3. **Streaming is authored, not built in.** Chunked file streaming is expressed in a
    scenario's `run()` as a loop of `startIO` chunk operations — no new engine verb.
 
-That is the complete engine surface change for Phase 2: one verb, three token-type
-strings, and their colors.
+4. **Loop-waiting frames in `runLoop`.** When a loop turn does no macrotask work but I/O is
+   still in flight, the scheduler emits a single "poll phase: waiting for I/O to complete
+   (the event loop is free, not blocked)" frame with `activePhase: "poll"`. Without this,
+   slow I/O is invisible — the loop turns over instantly with no frames, so a slow query
+   looks identical to a fast one. This frame is what makes the central non-blocking lesson
+   (e.g. `/api/orders`) visible: the user watches the loop cycle while the query runs. It
+   does not change behavior for fast (1-turn) I/O, which still completes on the first poll.
+
+That is the complete engine surface change for Phase 2: the `cpuWork` verb, loop-waiting
+frames, three I/O token-type strings (`cache`/`crypto`/`compress`) plus the `cpu` type, and
+their theme colors.
 
 ## The 12 route scenarios
 
