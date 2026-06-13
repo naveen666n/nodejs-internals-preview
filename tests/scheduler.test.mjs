@@ -75,3 +75,54 @@ test("a nextTick scheduled inside a microtask drains before remaining promises",
   // After p1 runs and schedules a nextTick, that nextTick must run before p2
   assert.deepEqual(order, ["p1", "nt-from-p1", "p2"]);
 });
+
+test("setImmediate (check) runs after setTimeout(0) (timers) within a loop", () => {
+  const order = [];
+  frames((api) => {
+    api.setImmediate(() => order.push("immediate"), { label: "immediate" });
+    api.setTimeout(() => order.push("timeout"), 0, { label: "timeout" });
+    api.runLoop();
+  });
+  assert.deepEqual(order, ["timeout", "immediate"]);
+});
+
+test("microtasks drain between two macrotasks", () => {
+  const order = [];
+  frames((api) => {
+    api.setTimeout(() => {
+      order.push("timer1");
+      api.promiseThen(() => order.push("micro-after-timer1"), { label: "m1" });
+    }, 0, { label: "timer1" });
+    api.setTimeout(() => order.push("timer2"), 0, { label: "timer2" });
+    api.runLoop();
+  });
+  // the microtask queued in timer1 must run before timer2 executes
+  assert.deepEqual(order, ["timer1", "micro-after-timer1", "timer2"]);
+});
+
+test("startIO consumes a thread-pool slot then completes via poll-phase callback", () => {
+  const order = [];
+  const fs = frames((api) => {
+    api.call("main", { line: 0 });
+    api.startIO({ ioType: "file", label: "readFile", onComplete: () => order.push("io-done") });
+    api.return();
+    api.runLoop();
+  });
+  assert.deepEqual(order, ["io-done"]);
+  // at some frame, a thread-pool slot must be occupied
+  const busy = fs.find((f) => f.threadPool.some((slot) => slot !== null));
+  assert.ok(busy, "thread pool should be used during I/O");
+  // final frame: pool idle again, io drained
+  const last = fs[fs.length - 1];
+  assert.ok(last.threadPool.every((slot) => slot === null));
+  assert.deepEqual(last.io, []);
+});
+
+test("httpRequest registers an active request with a route", () => {
+  const fs = frames((api) => {
+    api.httpRequest({ route: "/api/users", label: "GET /api/users" });
+    api.runLoop();
+  });
+  const withReq = fs.find((f) => f.requests.length === 1);
+  assert.equal(withReq.requests[0].route, "/api/users");
+});
